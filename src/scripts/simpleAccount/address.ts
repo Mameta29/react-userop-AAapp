@@ -1,6 +1,6 @@
 import { Presets } from "userop";
 // @ts-ignore
-import config from "../../config.json";
+import config from "../../../config.json";
 
 export default async function main() {
   const simpleAccount = await Presets.Builder.SimpleAccount.init(
