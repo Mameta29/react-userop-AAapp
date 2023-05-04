@@ -1,13 +1,20 @@
 import { ethers } from "ethers";
-import { ERC20_ABI } from "../../utils/abi";
-// @ts-ignore
-import config from "../../config.json";
 import { Client, Presets } from "userop";
-import { CLIOpts } from "../../utils/types";
+import { ERC20_ABI} from "../../../utils/abi";
+import { CLIOpts } from "../../../utils/types";
 
+// @ts-ignore
+import config from "../../../config.json";
+
+// This example requires several layers of calls:
+// EntryPoint
+//  ┕> sender.executeBatch
+//    ┕> token.transfer (recipient 1)
+//    ⋮
+//    ┕> token.transfer (recipient N)
 export default async function main(
   tkn: string,
-  t: string,
+  t: Array<string>,
   amt: string,
   opts: CLIOpts
 ) {
@@ -28,21 +35,31 @@ export default async function main(
 
   const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
   const token = ethers.utils.getAddress(tkn);
-  const to = ethers.utils.getAddress(t);
   const erc20 = new ethers.Contract(token, ERC20_ABI, provider);
   const [symbol, decimals] = await Promise.all([
     erc20.symbol(),
     erc20.decimals(),
   ]);
   const amount = ethers.utils.parseUnits(amt, decimals);
-  console.log(`Transferring ${amt} ${symbol}...`);
+
+  let dest: Array<string> = [];
+  let data: Array<string> = [];
+  t.map((addr) => addr.trim()).forEach((addr) => {
+    dest = [...dest, erc20.address];
+    data = [
+      ...data,
+      erc20.interface.encodeFunctionData("transfer", [
+        ethers.utils.getAddress(addr),
+        amount,
+      ]),
+    ];
+  });
+  console.log(
+    `Batch transferring ${amt} ${symbol} to ${dest.length} recipients...`
+  );
 
   const res = await client.sendUserOperation(
-    simpleAccount.execute(
-      erc20.address,
-      0,
-      erc20.interface.encodeFunctionData("transfer", [to, amount])
-    ),
+    simpleAccount.executeBatch(dest, data),
     {
       dryRun: opts.dryRun,
       onBuild: (op) => console.log("Signed UserOperation:", op),

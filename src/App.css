@@ -1,38 +1,53 @@
+/* App.css */
 .App {
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+  background-color: #f6f7fb;
+  font-family: "Roboto", sans-serif;
 }
 
 .App-header {
-  background-color: #282c34;
+  padding: 2rem;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: #333;
 }
 
 .App-link {
   color: #61dafb;
+  text-decoration: none;
+  font-weight: 500;
+  margin-top: 1rem;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+input {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+button {
+  background-color: #61dafb;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.5rem 1.5rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #4fb0e8;
+}
+
+button:focus {
+  outline: none;
 }

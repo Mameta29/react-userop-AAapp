@@ -1,16 +1,23 @@
 import { ethers } from "ethers";
 import { Client, Presets } from "userop";
-import { CLIOpts } from "../../utils/types";
-// @ts-ignore
-import config from "../../config.json";
+import { ERC20_ABI} from "../../../utils/abi";
+import { CLIOpts } from "../../../utils/types";
 
-export default async function main(t: string, amt: string, opts: CLIOpts) {
+// @ts-ignore
+import config from "../../../config.json";
+
+export default async function main(
+  tkn: string,
+  s: string,
+  amt: string,
+  opts: CLIOpts
+) {
   const paymaster = opts.withPM
     ? Presets.Middleware.verifyingPaymaster(
         config.paymaster.rpcUrl,
         config.paymaster.context
       )
-    : undefined
+    : undefined;
   const simpleAccount = await Presets.Builder.SimpleAccount.init(
     config.signingKey,
     config.rpcUrl,
@@ -20,10 +27,23 @@ export default async function main(t: string, amt: string, opts: CLIOpts) {
   );
   const client = await Client.init(config.rpcUrl, config.entryPoint);
 
-  const target = ethers.utils.getAddress(t);
-  const value = ethers.utils.parseEther(amt);
+  const provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
+  const token = ethers.utils.getAddress(tkn);
+  const spender = ethers.utils.getAddress(s);
+  const erc20 = new ethers.Contract(token, ERC20_ABI, provider);
+  const [symbol, decimals] = await Promise.all([
+    erc20.symbol(),
+    erc20.decimals(),
+  ]);
+  const amount = ethers.utils.parseUnits(amt, decimals);
+  console.log(`Approving ${amt} ${symbol}...`);
+
   const res = await client.sendUserOperation(
-    simpleAccount.execute(target, value, "0x"),
+    simpleAccount.execute(
+      erc20.address,
+      0,
+      erc20.interface.encodeFunctionData("approve", [spender, amount])
+    ),
     {
       dryRun: opts.dryRun,
       onBuild: (op) => console.log("Signed UserOperation:", op),

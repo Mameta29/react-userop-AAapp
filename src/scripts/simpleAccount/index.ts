@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import address from "./address";
-import transfer from "./transfer";
+import { transfer }  from "./transfer";
 import erc20Transfer from "./erc20Transfer";
 import erc20Approve from "./erc20Approve";
 import batchErc20Transfer from "./batchErc20Transfer";
